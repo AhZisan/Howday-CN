@@ -1,0 +1,141 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-howdycn-staging-62610-authRole",
+      "UnauthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdycn-staging-62610-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdycn-staging-62610-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-howdycn-staging-62610-deployment",
+      "UnauthRoleName": "amplify-howdycn-staging-62610-unauthRole",
+      "StackName": "amplify-howdycn-staging-62610",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:235847695468:stack/amplify-howdycn-staging-62610/c2141c40-4ead-11ed-8b94-0a86f0362834",
+      "AmplifyAppId": "d2qsma67ifeq3w",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+    }
+  },
+  "auth": {
+    "howdyCN": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "howdyCNPostConfirmation",
+          "triggerProvider": "Cognito",
+          "attributes": [
+            "Arn",
+            "Name"
+          ]
+        }
+      ],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "signupAttributes": [
+          "NAME"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 6,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "output": {
+        "UserPoolId": "ap-southeast-1_D4y5ZAGrH",
+        "AppClientIDWeb": "45uhcsh1b532mso41n32l2jj9m",
+        "AppClientID": "281n6nj8jlgjb90ifb1mqeaf9e",
+        "IdentityPoolId": "ap-southeast-1:3c56e633-2f3d-4f00-a7ec-b07600456405",
+        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:235847695468:userpool/ap-southeast-1_D4y5ZAGrH",
+        "IdentityPoolName": "testAuthIdentityPool__staging",
+        "UserPoolName": "howdyCN"
+      },
+      "lastPushTimeStamp": "2022-10-18T10:37:38.127Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/auth/howdyCN-cloudformation-template.json",
+        "logicalId": "authhowdyCN"
+      },
+      "lastPushDirHash": "0QrgZp41IKYSzwve1NL+LS9AMek="
+    }
+  },
+  "storage": {
+    "s3howdycnstorage5a354f2e": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "output": {
+        "BucketName": "howdy-cn-storage-5a354f2e62610-staging",
+        "Region": "ap-southeast-1"
+      },
+      "lastPushTimeStamp": "2022-10-18T10:37:37.482Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storages3howdycnstorage5a354f2e"
+      }
+    }
+  },
+  "api": {
+    "howdyCN": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "API_KEY",
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 30,
+              "description": "api key description"
+            }
+          },
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "AWS_IAM"
+            }
+          ]
+        },
+        "GraphQLAPIIdOutput": "e4lm5gs6trb4bos2ooab3w6q3q",
+        "GraphQLAPIEndpointOutput": "https://7borrnhdffcrnistx4lu2xepeu.appsync-api.ap-southeast-1.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-k3feq4gmxfgvxjbsrmizfoqikm"
+      },
+      "lastPushTimeStamp": "2022-10-18T10:37:37.491Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apihowdyCN"
+      }
+    }
+  },
+  "function": {
+    "howdyCNPostConfirmation": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "lastBuildTimeStamp": "2022-10-18T10:32:49.207Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2022-10-18T10:32:50.703Z",
+      "distZipFilename": "howdyCNPostConfirmation-5152716d2b5751746c79-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-howdycn-staging-62610-deployment",
+        "s3Key": "amplify-builds/howdyCNPostConfirmation-5152716d2b5751746c79-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/function/howdyCNPostConfirmation-cloudformation-template.json",
+        "logicalId": "functionhowdyCNPostConfirmation"
+      },
+      "lastPushTimeStamp": "2022-10-18T10:37:38.127Z",
+      "output": {
+        "Region": "ap-southeast-1",
+        "Arn": "arn:aws:lambda:ap-southeast-1:235847695468:function:howdyCNPostConfirmation-staging",
+        "Name": "howdyCNPostConfirmation-staging",
+        "LambdaExecutionRole": "howdyCNPostConfirmation-staging"
+      },
+      "lastPushDirHash": "4WUS3414z365ma1M6qZQlbbIxKQ="
+    }
+  }
+}
