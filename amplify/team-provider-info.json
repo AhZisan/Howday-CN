@@ -24,9 +24,6 @@
           "deploymentBucketName": "amplify-howdycn-staging-62610-deployment",
           "s3Key": "amplify-builds/howdyCNPostConfirmation-5152716d2b5751746c79-build.zip"
         }
-      },
-      "api": {
-        "howdyCN": {}
       }
     }
   }
