@@ -331,7 +331,7 @@ export default function FastShareFTF() {
             <View style={{
                 backgroundColor: 'white',
                 justifyContent: 'flex-end',
-                height: 75,
+                height: 85,
                 padding: 7,
             }}>
                 <Text style={{ textAlign: "center", margin: 5 }}>{file?.name}</Text>
