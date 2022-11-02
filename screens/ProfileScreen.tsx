@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, Text, Platform, Pressable, StyleSheet } from "react-native";
+import { View, Image, Text, ImageBackground, Pressable, StyleSheet } from "react-native";
 import { RootStackScreenProps } from '../types';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { Auth, DataStore } from 'aws-amplify';
 import { User } from '../src/models';
@@ -28,6 +29,8 @@ export default function NotFoundScreen({ navigation }: RootStackScreenProps<'Not
 
   return (
     <View style={styles.container}>
+      {/* <ImageBackground source={require('../assets/images/bcp.png')} style={styles.BcImage}> */}
+
       <View style={styles.profileContainer}>
         <Image
           source={{
@@ -46,15 +49,78 @@ export default function NotFoundScreen({ navigation }: RootStackScreenProps<'Not
             Status: {user?.status}
           </Text>
         </View>
+      </View>
+      <View style={styles.opt}>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'lightgray' }}>
+          <Text style={{ padding: 15 }}>
+            Account
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'lightgray' }}>
+          <Text style={{ padding: 15 }}>
+            Library
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'lightgray' }}>
+          <Text style={{ padding: 15 }}>
+            Privacy
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ padding: 15 }}>
+            Notification
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
 
 
       </View>
+
+      <View style={styles.opt}>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'lightgray' }}>
+          <Text style={{ padding: 15 }}>
+            Settings
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: 'lightgray' }}>
+          <Text style={{ padding: 15 }}>
+            Help
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ padding: 15 }}>
+            About
+          </Text>
+          <MaterialIcons name="arrow-forward-ios" size={15} color="black" style={{ padding: 15 }} />
+        </View>
+
+
+
+      </View>
+
+
+
+
 
       <View style={styles.logoutContainer}>
         <Pressable onPress={logout} style={styles.logout}>
           <Text style={styles.logoutText}>Logout</Text>
         </Pressable>
       </View>
+      {/* </ImageBackground> */}
     </View>
   );
 }
@@ -63,8 +129,15 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: 'lightgray'
+    backgroundColor: '#EBECf0'
   },
+  // BcImage: {
+  //   flex: 1,
+  //   resizeMode: 'cover',
+  //   justifyContent: 'center',
+  //   // opacity: 0.5
+
+  // },
 
   profileContainer: {
     flexDirection: 'row',
@@ -103,6 +176,16 @@ const styles = StyleSheet.create({
     height: 70,
     marginTop: 6,
   },
+  opt: {
+    marginTop: 5,
+    backgroundColor: 'white',
+    justifyContent: 'flex-start',
+    borderRadius: 10,
+    padding: 5
+  },
+
+
+
 
   logoutContainer: {
     flex: 1,

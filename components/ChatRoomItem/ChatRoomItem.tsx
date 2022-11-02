@@ -46,7 +46,9 @@ export default function ChatRoomItem({ chatRoom }) {
 
   return (
     <Pressable onPress={OnPrs} style={styles.container}>
-      <Image source={{ uri: user.imageUri }} style={styles.image} />
+      <Image
+        source={user?.imageUri ? { uri: user?.imageUri } : require('../../assets/images/avatar.png')}
+        style={styles.image} />
 
       {!!chatRoom.newMessages && (
         <View style={styles.badgeContainer}>

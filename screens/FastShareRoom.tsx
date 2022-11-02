@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     },
     container: {
         height: "100%",
-        backgroundColor: "#e6e6e6",
+        backgroundColor: 'white',
     },
     connected: {
         marginTop: 90,
@@ -394,6 +394,7 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+
     },
     sendContainer: {
         justifyContent: 'center',

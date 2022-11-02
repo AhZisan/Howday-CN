@@ -45,9 +45,7 @@ const ChatRoomHeader = ({ id, children }) => {
 
         }}>
             <Image
-                source={{
-                    uri: user?.imageUri
-                }}
+                source={user?.imageUri ? { uri: user?.imageUri } : require('../assets/images/avatar.png')}
                 style={{
                     width: 35,
                     height: 35,

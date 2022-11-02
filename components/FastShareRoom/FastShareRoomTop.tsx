@@ -26,9 +26,8 @@ const FastShareRoomTop = ({ connection, id }) => {
   return (
     <View style={styles.info}>
       <Image
-        source={{
-          uri: user?.imageUri,
-        }}
+        source={user?.imageUri ? { uri: user?.imageUri } : require('../../assets/images/avatar.png')}
+
         style={styles.image}
       />
 
@@ -62,6 +61,8 @@ const styles = StyleSheet.create({
     width: 50,
     borderRadius: 30,
     marginRight: 10,
+    borderWidth: 2,
+    borderColor: '#ff7518',
   },
   rightConteiner: {
     flex: 1,
