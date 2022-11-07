@@ -29,7 +29,6 @@ export default function HomeScreen() {
     fatchChatRooms();
   }, [isFocused]);
 
-  console.log("home");
   return (
     <View style={styles.page}>
       <FlatList

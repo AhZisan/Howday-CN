@@ -34,7 +34,6 @@ const HomeHeader = ({ id, children }) => {
             width,
 
         }}>
-
             <Pressable
                 onPress={() => navigation.navigate('Profile')}>
                 <Image
@@ -75,7 +74,6 @@ const HomeHeader = ({ id, children }) => {
                     size={28} color="black"
                     style={{ marginHorizontal: 13 }}
                 />
-
             </Pressable>
         </View>
     )

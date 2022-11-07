@@ -33,21 +33,12 @@ export default function NotFoundScreen({ navigation }: RootStackScreenProps<'Not
 
       <View style={styles.profileContainer}>
         <Image
-          source={{
-            uri: user?.imageUri
-          }}
+          source={user?.imageUri ? { uri: user?.imageUri } : require('../assets/images/avatar.png')}
           style={styles.profileImg}
         />
         <View style={styles.profileInfo}>
-          <Text
-            style={styles.pText}>
-            {user?.name}
-          </Text>
-
-          <Text
-            style={styles.text}>
-            Status: {user?.status}
-          </Text>
+          <Text style={styles.pText}> {user?.name} </Text>
+          <Text style={styles.text}> Status: {user?.status} </Text>
         </View>
       </View>
       <View style={styles.opt}>

@@ -52,10 +52,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
   return (
     <Stack.Navigator>
-
-      {/* <Stack.Screen name="Login" component={LogIn} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-       */}
       <Stack.Screen
         name="ChatItems"
         component={TabNavigator}
@@ -64,9 +60,8 @@ function RootNavigator() {
           headerStyle: {
             backgroundColor: 'white'
           }
-
         })}
-      />
+        />
 
       <Stack.Group screenOptions={{ presentation: "card", }}>
         <Stack.Screen

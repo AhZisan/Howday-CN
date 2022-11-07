@@ -7,7 +7,9 @@ import { Auth, DataStore } from "aws-amplify";
 import { ChatRoomUser, Message, User } from "../../src/models";
 
 export default function ChatRoomItem({ chatRoom }) {
-  const [user, setUser] = useState<User | null>(null); // the display user
+
+  // the display user
+  const [user, setUser] = useState<User | null>(null);
   const [lastMessage, setLastMessage] = useState<Message | undefined>();
 
   const navigation = useNavigation();

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from "uuid";
 
 import { Auth, DataStore, Storage } from "aws-amplify";
@@ -32,22 +33,23 @@ const MessageInput = ({ chatRoom }) => {
   const [isEmoOn, setEmoOn] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // useEffect(() => {
-  //     (async () => {
-  //         if (Platform.OS !== 'web') {
-  //             const libraryResponse =
-  //                 await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //             const photoResponse = await ImagePicker.requestCameraPermissionsAsync();
+  // request camera permission
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== 'web') {
+        const libraryResponse =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const photoResponse = await ImagePicker.requestCameraPermissionsAsync();
 
-  //             if (
-  //                 libraryResponse.status !== "granted" ||
-  //                 photoResponse.status !== "granted"
-  //                 ) {
-  //                 alert("Sorry, we need camera roll permission to make this work!")
-  //             }
-  //         }
-  //     })();
-  // }, []);
+        if (
+          libraryResponse.status !== "granted" ||
+          photoResponse.status !== "granted"
+        ) {
+          alert("Sorry, we need camera roll permission to make this work!")
+        }
+      }
+    })();
+  }, []);
 
   const sendMessages = async () => {
     //Send message
@@ -137,6 +139,7 @@ const MessageInput = ({ chatRoom }) => {
         chatroomID: chatRoom.id,
       })
     );
+
 
     updateLastMessage(newMessage);
 
