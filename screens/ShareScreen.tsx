@@ -18,11 +18,15 @@ export default function ShareScreen() {
           name
         </Text>
       </View>
-      <View>
 
+      <View style={styles.middle}>
+        <Text>
+          name
+        </Text>
       </View>
-      <View>
 
+      <View style={styles.bottomb}>
+        <Text>Btoom</Text>
       </View>
 
     </SafeAreaView>
@@ -41,7 +45,16 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "lightblue"
   },
+  middle: {
+    flex: 1,
 
+  },
+  bottomb: {
+    backgroundColor: "lightblue",
+    margin: 5,
+    padding: 5,
+
+  },
 
 })
 
