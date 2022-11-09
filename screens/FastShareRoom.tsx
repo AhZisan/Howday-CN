@@ -43,7 +43,7 @@ export default function FastShareFTF() {
     let userData = {};
     const roomID = route.params.id;
     const isFocused = useIsFocused();
-
+    console.log(roomID)
     useEffect(() => {
         var socket_connect = function (room) {
             return io("http://localhost:5000/", {
@@ -62,7 +62,7 @@ export default function FastShareFTF() {
         });
 
         socketRef.current.emit("chat message", "hello room #" + roomID);
-        socketRef.current.emit("join room", roomID);
+        socketRef.current.emit("joinroom", roomID);
 
         socketRef.current.on("all users", (id) => {
             setPartnerID(id);
@@ -314,7 +314,7 @@ export default function FastShareFTF() {
                                     style={[styles.button, styles.buttonOpen]}
                                     onPress={() => createAndDownloadBlobFile()}
                                 >
-                                    <Text style={styles.textStyle}>Download</Text>
+                                    <Text style={styles.textStyled}>Download</Text>
                                 </Pressable>
                             </View>
                         </View>
@@ -442,6 +442,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#EBECf0",
     },
     textStyle: {
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    textStyled: {
         color: "white",
         fontWeight: "bold",
         textAlign: "center",
