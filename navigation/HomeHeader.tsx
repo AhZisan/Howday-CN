@@ -37,9 +37,7 @@ const HomeHeader = ({ id, children }) => {
             <Pressable
                 onPress={() => navigation.navigate('Profile')}>
                 <Image
-                    source={{
-                        uri: user?.imageUri
-                    }}
+                    source={user?.imageUri ? { uri: user?.imageUri } : require('../assets/images/avatar.png')}
                     style={{
                         width: 37,
                         height: 37,

@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   opt: {
-    marginTop: 5,
+    marginTop: 10,
     backgroundColor: 'white',
     justifyContent: 'flex-start',
     borderRadius: 10,
