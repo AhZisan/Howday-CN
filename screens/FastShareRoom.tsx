@@ -436,10 +436,10 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     buttonOpen: {
-        backgroundColor: "#F194FF",
+        backgroundColor: "#ff7518",
     },
     buttonClose: {
-        backgroundColor: "#2196F3",
+        backgroundColor: "#EBECf0",
     },
     textStyle: {
         color: "white",
