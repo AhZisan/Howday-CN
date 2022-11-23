@@ -245,35 +245,74 @@ export default function FastShareFTF() {
     }
   };
 
+  let body;
+  if (connectionEstablished) {
+    body = (
+      <View style={styles.connected}>
+        <View style={styles.sendContainer}>
+          <Text
+            style={{
+              textAlign: "center",
+              fontSize: 20,
+              fontWeight: "bold",
+              fontFamily: "cursive",
+              marginBottom: 50,
+              padding: 50,
+            }}
+          >
+            Yay! room is connected.. Send Your file now!{" "}
+          </Text>
+          <Text style={{ textAlign: "center" }}>{file?.name}</Text>
+          <View style={styles.sendButtons}>
+            <Pressable
+              onPress={selectFile}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed ? "#ff5e18" : "#ff7518",
+                },
+                styles.wrapperCustom,
+              ]}
+            >
+              <AntDesign name="plus" size={22} color="white" />
+              <Text style={{ color: "white", marginLeft: 5 }}>Select file</Text>
+            </Pressable>
+            <Pressable
+              onPress={sendFile}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed ? "#ff5e18" : "#ff7518",
+                },
+                styles.wrapperCustom,
+              ]}
+            >
+              <Ionicons name="send" size={18} color="white" />
+              <Text style={{ color: "white", marginLeft: 5 }}>Send file</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  } else {
+    body = (
+      <View style={styles.connecting}>
+        {/* <Text>connecting....</Text> */}
+        <Image
+          source={require("../assets/images/wifi.gif")}
+          style={styles.connectingImage}
+        />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <FastShareRoomItems id={roomID} connection={connectionEstablished} />
-      {connectionEstablished ? (
-        <View style={styles.connected}>
-          <View style={styles.sendContainer}>
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize: 20,
-                fontWeight: "bold",
-                fontFamily: "cursive",
-                marginBottom: 50,
-                padding: 50,
-              }}
-            >
-              Room is connected.. Send Your file now!{" "}
-            </Text>
-          </View>
+      {body}
+      {/* {!connectionEstablished ? (
+        <View style={styles.connection}>
+          <Text>Waiting for other user </Text>
         </View>
-      ) : (
-        <View style={styles.connecting}>
-          {/* <Text>connecting....</Text> */}
-          <Image
-            source={require("../assets/images/wca.gif")}
-            style={styles.connectingImage}
-          />
-        </View>
-      )}
+      ) : null} */}
 
       <View style={styles.centeredView}>
         <Modal
@@ -309,7 +348,7 @@ export default function FastShareFTF() {
                   style={[styles.button, styles.buttonOpen]}
                   onPress={() => createAndDownloadBlobFile()}
                 >
-                  <Text style={styles.textStyled}>Download</Text>
+                  <Text style={styles.textStyle}>Download</Text>
                 </Pressable>
               </View>
             </View>
@@ -322,43 +361,6 @@ export default function FastShareFTF() {
           <Text style={styles.textStyle}>Show Modal</Text>
         </Pressable> */}
       </View>
-
-      <View
-        style={{
-          backgroundColor: "white",
-          justifyContent: "flex-end",
-          height: 85,
-          padding: 7,
-        }}
-      >
-        <Text style={{ textAlign: "center", margin: 5 }}>{file?.name}</Text>
-        <View style={styles.sendButtons}>
-          <Pressable
-            onPress={selectFile}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? "#ff5e18" : "#ff7518",
-              },
-              styles.wrapperCustom,
-            ]}
-          >
-            <AntDesign name="plus" size={18} color="white" />
-            <Text style={{ color: "white", marginLeft: 5 }}>Select file</Text>
-          </Pressable>
-          <Pressable
-            onPress={sendFile}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? "#ff5e18" : "#ff7518",
-              },
-              styles.wrapperCustom,
-            ]}
-          >
-            <Ionicons name="send" size={18} color="white" />
-            <Text style={{ color: "white", marginLeft: 5 }}>Send file</Text>
-          </Pressable>
-        </View>
-      </View>
     </SafeAreaView>
   );
 }
@@ -368,8 +370,7 @@ const styles = StyleSheet.create({
     height: 200,
     width: 200,
     marginTop: 190,
-    borderRadius: 100,
-    opacity: 0.6,
+    // borderRadius: 30,
   },
   wrapperCustom: {
     display: "flex",
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   container: {
     height: "100%",
-    backgroundColor: "white",
+    backgroundColor: "#e6e6e6",
   },
   connected: {
     marginTop: 90,
@@ -393,17 +394,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sendContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: "80%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-evenly",
+    padding: "80px 20px",
   },
   sendButtons: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    padding: 3,
-    height: 35,
   },
   centeredView: {
     flex: 1,
@@ -432,16 +432,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonOpen: {
-    backgroundColor: "#ff7518",
+    backgroundColor: "#F194FF",
   },
   buttonClose: {
-    backgroundColor: "#EBECf0",
+    backgroundColor: "#2196F3",
   },
   textStyle: {
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  textStyled: {
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
