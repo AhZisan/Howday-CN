@@ -61,7 +61,7 @@ function RootNavigator() {
             backgroundColor: 'white'
           }
         })}
-        />
+      />
 
       <Stack.Group screenOptions={{ presentation: "card", }}>
         <Stack.Screen
