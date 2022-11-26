@@ -81,7 +81,7 @@ function RootNavigator() {
       <Stack.Screen name='FastShareRoom' component={FstShrRoom} />
 
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Share" component={ShareScreen} />
+        <Stack.Screen name="Share" component={ShareScreen} options={{ headerTitle: 'Universal Fast Share' }} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
       </Stack.Group>
 

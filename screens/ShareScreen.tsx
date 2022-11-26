@@ -184,7 +184,7 @@ export default function ShareScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.centeredView}>
+    <SafeAreaView style={styles.container}>
       <Modal
         animationType="slide"
         transparent={true}
@@ -218,14 +218,15 @@ export default function ShareScreen() {
                 </Text>
                 <View
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-evenly",
+                    // display: "flex",
+                    // alignItems: "center",
+                    marginTop: 10,
+                    justifyContent: 'space-between',
                     flexDirection: "row",
                   }}
                 >
                   <Pressable
-                    style={[styles.button, styles.buttonClose]}
+                    style={styles.buttonClose}
                     onPress={() => {
                       rejectRequest();
                       setModalVisible(!modalVisible);
@@ -234,10 +235,10 @@ export default function ShareScreen() {
                     <Text style={styles.textStyle}>Reject</Text>
                   </Pressable>
                   <Pressable
-                    style={[styles.button, styles.buttonOpen]}
+                    style={styles.buttonOpen}
                     onPress={acceptRequest}
                   >
-                    <Text style={styles.textStyle}>Accept</Text>
+                    <Text style={{ color: 'white' }}>Accept</Text>
                   </Pressable>
                 </View>
               </>
@@ -247,8 +248,8 @@ export default function ShareScreen() {
                 {sending
                   ? "The File is being sent, please wait..."
                   : sentRequest
-                  ? "Wait till user accepts your request"
-                  : "Receiving File, please wait... "}
+                    ? "Wait till user accepts your request"
+                    : "Receiving File, please wait... "}
               </Text>
             )}
             {rejected && (
@@ -269,81 +270,175 @@ export default function ShareScreen() {
           </View>
         </View>
       </Modal>
-      <View>
-        <View>
-          <View>
-            <Text style={styles.textStyle}>{myUsername}</Text>
-            <Text style={styles.textStyle}>
-              Share your username with your friend
-            </Text>
-            {/* <ImageUploader setFile={setFile} /> */}
 
-            <Pressable
-              onPress={selectFile}
-              style={({ pressed }) => [
-                {
-                  backgroundColor: pressed ? "#ff5e18" : "#ff7518",
-                },
-                styles.wrapperCustom,
-              ]}
-            >
-              {!file && <AntDesign name="plus" size={22} color="white" />}
-              <Text style={{ color: "white", marginLeft: 5 }}>
-                {file ? file.name : "Select File"}
-              </Text>
-            </Pressable>
-          </View>
-          <View>
-            {usersList.length > 1 ? (
-              usersList.map(
-                ({ username, timestamp, imageUri }) =>
-                  username !== myUsername && (
-                    <Pressable
-                      key={username}
-                      style={[styles.button, styles.peer, styles.buttonClose]}
-                      onPress={() =>
-                        !file || loading
-                          ? Alert.alert("Select a file")
-                          : sendRequest(username)
-                      }
-                    >
-                      <Image
-                        source={
-                          imageUri
-                            ? { uri: imageUri }
-                            : require("../assets/images/avatar.png")
-                        }
-                        style={styles.profileImg}
-                      />
-                      <Text style={styles.textStyle}>{username}</Text>
-                      <Ionicons
-                        name="send"
-                        size={18}
-                        color="white"
-                        style={{
-                          borderWidth: 2,
-                          borderRadius: 3,
-                          borderColor: "#fff",
-                          padding: 3,
-                        }}
-                      />
-                    </Pressable>
-                  )
-              )
-            ) : (
-              <Text style={styles.textStyle}>
-                No Users Online Right Now! Wait till someone connects to start
-                sharing
-              </Text>
-            )}
-          </View>
-        </View>
+
+
+
+
+
+
+
+
+      <View style={styles.topArea}>
+
+        <Text style={{ fontSize: 18, fontWeight: 'bold', textTransform: 'capitalize', ...styles.textStyle, }}>{myUsername}</Text>
+        <Text style={styles.textStyle}>
+          Tap on the receiver to share selected file
+        </Text>
+        {/* <ImageUploader setFile={setFile} /> */}
       </View>
+
+
+      <View style={styles.midArea}>
+        {usersList.length > 1 ? (
+          usersList.map(
+            ({ username, timestamp, imageUri }) =>
+              username !== myUsername && (
+                <Pressable
+                  key={username}
+                  style={[styles.button, styles.peer, styles.ShareUsers]}
+                  onPress={() =>
+                    !file || loading
+                      ? Alert.alert("Select a file")
+                      : sendRequest(username)
+                  }
+                >
+                  <Image
+                    source={
+                      imageUri
+                        ? { uri: imageUri }
+                        : require("../assets/images/avatar.png")
+                    }
+                    style={styles.profileImg}
+                  />
+                  <Text style={styles.textStyle}>{username}</Text>
+                  <Ionicons
+                    name="send"
+                    size={22}
+                    color="#ff7518"
+                    style={{
+                      borderWidth: 2,
+                      borderRadius: 3,
+                      borderColor: "#ff7518",
+                      padding: 3,
+                    }}
+                  />
+                </Pressable>
+              )
+          )
+        ) : (
+
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 15, }}>
+            <Text style={styles.textStyle}>
+              No Users Online Right Now!
+            </Text>
+            <Text style={styles.textStyle}>
+              Waiting for users to be connected...
+            </Text>
+
+          </View>
+
+        )}
+      </View>
+
+
+
+
+
+      <View style={styles.bottomArea}>
+        <Pressable
+          onPress={selectFile}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? "#ff5e18" : "#ff7518",
+            },
+            styles.wrapperCustom,
+          ]}
+        >
+          {!file && <AntDesign name="plus" size={22} color="white" />}
+          <Text style={{ color: "white", marginLeft: 5 }}>
+            {file ? file.name : "Select File"}
+          </Text>
+        </Pressable>
+      </View>
+
+
+
+
+
+
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+
+  topArea: {
+    padding: 10,
+    paddingHorizontal: 15,
+    borderColor: '#D4D4D4',
+    borderBottomWidth: 1,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+
+  },
+  textStyle: {
+    color: "black",
+    // fontWeight: "bold",
+    // textAlign: "center",
+
+  },
+
+  midArea: {
+    flex: 1,
+    // backgroundColor: 'lightgreen',
+    padding: 5,
+
+
+  },
+
+  ShareUsers: {
+    borderRadius: 10,
+    padding: 5,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: '#ECECEC',
+    marginBottom: 4,
+    shadowRadius: 4,
+    shadowOffset: {
+      height: 0,
+      width: 0,
+    },
+    shadowOpacity: .05,
+
+
+  },
+
+  bottomArea: {
+    padding: 5,
+
+
+
+
+  },
+
+
+  wrapperCustom: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    borderRadius: 8,
+    padding: 6,
+  },
+
+
+
+
   peer: {
     display: "flex",
     flexDirection: "row",
@@ -358,30 +453,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: "#ff7518",
   },
-  wrapperCustom: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    borderRadius: 8,
-    padding: 6,
-  },
-  container: {
-    flex: 1,
 
-    backgroundColor: "white",
-  },
 
-  connectDiv: {
-    margin: 5,
-    padding: 5,
-    backgroundColor: "lightblue",
-  },
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
+    // marginTop: 22,
   },
   modalView: {
     margin: 20,
@@ -404,20 +482,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonOpen: {
-    backgroundColor: "#F194FF",
+    backgroundColor: "#ff7518",
+    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal: 25,
+    marginHorizontal: 8,
+
+
   },
   buttonClose: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#ECECEC",
+    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal: 10,
+    marginHorizontal: 8,
+
   },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+
   modalText: {
-    marginBottom: 15,
+    marginBottom: 5,
     textAlign: "center",
-    color: "red",
   },
 });
 
