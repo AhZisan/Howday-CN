@@ -1,210 +1,226 @@
-import { useIsFocused, useRoute } from "@react-navigation/native";
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Text,
-  Alert,
-  Modal,
-  View,
-  StyleSheet,
-  FlatList,
-  SafeAreaView,
-  Pressable,
-  Image,
-} from "react-native";
-import FastShareRoomItems from "../components/FastShareRoom";
+import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
+import {
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  Pressable,
+  View,
+  SafeAreaView,
+  Image,
+  Platform,
+} from "react-native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
-import streamSaver from "streamsaver";
+import { useRoute } from "@react-navigation/native";
+import FastShareRoom from "../components/FastShareRoom";
+import * as FileSystem from "expo-file-system";
 
 export default function FastShareFTF() {
   const route = useRoute();
+  const user = route.params.user;
   const [modalVisible, setModalVisible] = useState(false);
-  const [recievedData, setRecievedData] = useState();
-  const [recievedFileName, setRecievedFileName] = useState();
-  const [connectionEstablished, setConnection] = useState(false);
-  const [file, setFile] = useState();
-  const [partnerId, setPartnerID] = useState("");
-  const [gotFile, setGotFile] = useState(false);
-  const name = "no-name";
-  const [fileUploadName, setFileName] = useState("");
-  const [usernames, setUsernames] = useState([]);
-  const [notification, setNotification] = useState(false);
+  const socket = useRef();
+  const peerInstance = useRef();
+  const [requested, setRequested] = useState(false);
+  const [sentRequest, setSentRequest] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [receiving, setReceiving] = useState(false);
+  const [rejected, setRejected] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [myUsername, setMyUsername] = useState("");
+  const [receiver, setReceiver] = useState(null);
+  const [peerUsername, setPeerUsername] = useState("");
+  const [peerSignal, setPeerSignal] = useState("");
+  const [file, setFile] = useState(null);
+  const [receivedFilePreview, setReceivedFilePreview] = useState("");
 
-  const [loader, setLoader] = useState(false);
-  const socketRef = useRef();
-  const peersRef = useRef();
-  const fileUpload = useRef();
-  const peerRef = useRef();
-  let screen = useRef(null);
-  let roomBody = useRef(null);
-  const fileNameRef = useRef("");
-  let userData = {};
-  const roomID = route.params.id;
-  const isFocused = useIsFocused();
-
-  useEffect(() => {
-    var socket_connect = function (room) {
-      return io("http://localhost:5000/", {
-        transports: ["websocket"],
-        extraHeaders: {
-          "my-custom-header": "1234", // ignored
-        },
-        query: "r_var=" + room,
-      });
-    };
-    socketRef.current = socket_connect(roomID);
-    console.log(socketRef.current);
-    socketRef.current.on("server full", () => {
-      alert("Server Full");
-      return;
-    });
-
-    socketRef.current.emit("chat message", "hello room #" + roomID);
-    socketRef.current.emit("join room", roomID);
-
-    socketRef.current.on("all users", (id) => {
-      setPartnerID(id);
-
-      userData["name"] = roomID;
-      userData["id"] = socketRef.current.id;
-      console.log(userData);
-      socketRef.current.emit("username", userData);
-
-      peerRef.current = createPeer(id, socketRef.current.id);
-      console.log(peerRef.current);
-    });
-    socketRef.current.on("getusername", (payload) => {
-      setUsernames(payload);
-    });
-
-    socketRef.current.on("user joined", (payload) => {
-      peerRef.current = addPeer(payload.signal, payload.callerID);
-    });
-
-    socketRef.current.on("receiving returned signal", (payload) => {
-      peerRef.current.signal(payload.signal);
-      setConnection(true);
-    });
-    socketRef.current.on("file recieved", () => {
-      setLoader(false);
-    });
-
-    socketRef.current.on("user left", (room) => {
-      console.log("user left");
-      if (room == roomID) {
-        peersRef.current.destroy();
-        setConnection(false);
-      }
-    });
-
-    socketRef.current.on("room full", () => {
-      alert("room is full");
-    });
-  }, [isFocused]);
-
-  function createPeer(userToSignal, callerID) {
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      config: {
-        iceServers: [
-          {
-            urls: "stun:stun.stunprotocol.org",
-          },
-          {
-            urls: "turn:numb.viagenie.ca",
-            credential: "muazkh",
-            username: "webrtc@live.com",
-          },
-        ],
-      },
-    });
-
-    peer.on("signal", (signal) => {
-      socketRef.current.emit("sending signal", {
-        userToSignal,
-        callerID,
-        signal,
-      });
-    });
-
-    peer.on("data", handleReceivingData);
-    peersRef.current = peer;
-
-    return peer;
-  }
-
-  function addPeer(incomingSignal, callerID) {
+  const SOCKET_EVENT = {
+    CONNECTED: "connected",
+    DISCONNECTED: "disconnect",
+    USERS_LIST: "users_list",
+    REQUEST_SENT: "request_sent",
+    REQUEST_ACCEPTED: "request_accepted",
+    REQUEST_REJECTED: "request_rejected",
+    SEND_REQUEST: "send_request",
+    ACCEPT_REQUEST: "accept_request",
+    REJECT_REQUEST: "reject_request",
+    SERVER_FULL: "server_full",
+    LEFT: "left",
+  };
+  const peerConfig = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun3.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:19302" },
+    ],
+  };
+  const acceptRequest = () => {
+    setRequested(false);
     const peer = new Peer({
       initiator: false,
       trickle: false,
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:global.stun.twilio.com:3478?transport=udp" },
-          { urls: "stun:stun.services.mozilla.com" },
-          //   {
-          //     urls: "turn:numb.viagenie.ca",
-          //     credential: "muazkh",
-          //     username: "webrtc@live.com",
-          //   },
-        ],
+    });
+    peer.on("signal", (data) => {
+      socket.current.emit(SOCKET_EVENT.ACCEPT_REQUEST, {
+        signal: data,
+        to: peerUsername,
+      });
+    });
+    peer.on("connect", () => {
+      setReceiving(true);
+    });
+    const fileChunks = [];
+    peer.on("data", (data) => {
+      if (data.toString().includes("done")) {
+        const parsed = JSON.parse(data);
+        // Once, all the chunks are received, combine them to form a Blob
+        const link = document.createElement("a");
+
+        const file = new Blob(fileChunks);
+        // setReceivedFilePreview(URL.createObjectURL(file));
+        const url = URL.createObjectURL(file);
+        if (Platform.OS == "web") {
+          link.setAttribute("href", url);
+          link.setAttribute("download", parsed.fileName);
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          const callback = (downloadProgress) => {
+            const progress =
+              downloadProgress.totalBytesWritten /
+              downloadProgress.totalBytesExpectedToWrite;
+            // this.setState({
+            //   downloadProgress: progress,
+            // });
+          };
+
+          const downloadResumable = FileSystem.createDownloadResumable(
+            url,
+            FileSystem.documentDirectory + parsed.fileName,
+            {},
+            callback
+          );
+
+          downloadResumable
+            .downloadAsync()
+            .then((uri) => {
+              console.log("Finished downloading to ", uri);
+            })
+            .catch((e) => {
+              console.error(e);
+            });
+        }
+
+        setReceiving(false);
+      } else {
+        // Keep appending various file chunks
+        fileChunks.push(data);
+      }
+    });
+
+    peer.signal(peerSignal);
+    peerInstance.current = peer;
+  };
+  const rejectRequest = () => {
+    socket.current.emit(SOCKET_EVENT.REJECT_REQUEST, { to: peerUsername });
+    setRequested(false);
+  };
+  const sendRequest = (username) => {
+    setLoading(true);
+    setPeerUsername(username);
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      config: peerConfig,
+    });
+    peer.on("signal", (data) => {
+      socket.current.emit(SOCKET_EVENT.SEND_REQUEST, {
+        to: username,
+        signal: data,
+        username: myUsername,
+      });
+      setSentRequest(true);
+      setLoading(false);
+    });
+    peer.on("connect", async () => {
+      setSending(true);
+      setSentRequest(false);
+      let buffer = await file.arrayBuffer();
+      const chunkSize = 16 * 1024;
+      while (buffer.byteLength) {
+        const chunk = buffer.slice(0, chunkSize);
+        buffer = buffer.slice(chunkSize, buffer.byteLength);
+
+        // Off goes the chunk!
+        peer.send(chunk);
+      }
+      peer.send(JSON.stringify({ done: true, fileName: file.name }));
+      setSending(false);
+    });
+    peerInstance.current = peer;
+  };
+  const SERVER_URL = "http://localhost:5000/";
+  useEffect(() => {
+    socket.current = io("http://localhost:5000/", {
+      transports: ["websocket"],
+      extraHeaders: {
+        "my-custom-header": "1234", // ignored
+      },
+      query: {
+        name: JSON.stringify(user),
       },
     });
 
-    peer.on("signal", (signal) => {
-      socketRef.current.emit("returning signal", { signal, callerID });
+    socket.current.on(SOCKET_EVENT.CONNECTED, (username) => {
+      setMyUsername(username);
+    });
+    socket.current.on(SOCKET_EVENT.SERVER_FULL, () => {
+      if (Platform.OS == "web") {
+        alert("Server is full");
+      } else {
+        Alert.alert("Server is full");
+      }
+    });
+    socket.current.on(SOCKET_EVENT.USERS_LIST, (users) => {
+      const receiver = users.find(
+        (target) =>
+          target.roomId == user?.roomId && target.username !== user?.name
+      );
+      setReceiver(receiver);
+      console.log(receiver);
     });
 
-    peer.on("data", handleReceivingData);
+    socket.current.on(SOCKET_EVENT.REQUEST_SENT, ({ signal, username }) => {
+      setPeerUsername(username);
+      setPeerSignal(signal);
+      setRequested(true);
+    });
+    socket.current.on(SOCKET_EVENT.REQUEST_ACCEPTED, ({ signal }) => {
+      peerInstance.current.signal(signal);
+    });
+    socket.current.on(SOCKET_EVENT.REQUEST_REJECTED, () => {
+      setSentRequest(false);
+      setRejected(true);
+    });
 
-    peer.signal(incomingSignal);
-    setConnection(true);
-    peersRef.current = peer;
-    return peer;
-  }
-
-  function handleReceivingData(data) {
-    console.log(data);
-    if (data.toString().includes("done")) {
-      const parsed = JSON.parse(data);
-      fileNameRef.current = parsed.fileName;
-      setModalVisible(true);
-    } else {
-      console.log(data);
-      setRecievedData(data);
-    }
-  }
-
-  function createAndDownloadBlobFile() {
-    const blob = new Blob([recievedData]);
-    const fileName = `${fileNameRef.current}`;
-    if (navigator.msSaveBlob) {
-      // IE 10+
-      navigator.msSaveBlob(blob, fileName);
-    } else {
-      const link = document.createElement("a");
-      // Browsers that support HTML5 download attribute
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-    socketRef.current.emit("file downloaded");
-    setModalVisible(false);
-  }
-
-  function resetFile() {
-    fileUpload.current.value = "";
-    setFileName("");
-  }
+    return () => {
+      socket.current.emit(SOCKET_EVENT.LEFT);
+    };
+  }, []);
+  useEffect(
+    () => () => {
+      // Make sure to revoke the data uris to avoid memory leaks
+      URL.revokeObjectURL(receivedFilePreview);
+    },
+    [receivedFilePreview]
+  );
 
   const selectFile = async () => {
     try {
@@ -216,175 +232,161 @@ export default function FastShareFTF() {
     }
   };
 
-  const sendFile = () => {
-    if (!file) {
-      //   error();
-      return;
-    }
-    const peer = peerRef.current;
-    console.log(peer);
-    const stream = file.stream();
-    console.log(stream);
-    const reader = stream.getReader();
-    setLoader(true);
-
-    reader.read().then((obj) => {
-      handlereading(obj.done, obj.value);
-    });
-
-    function handlereading(done, value) {
-      if (done) {
-        peer.write(JSON.stringify({ done: true, fileName: file.name }));
-        return;
-      }
-
-      peer.write(value);
-      reader.read().then((obj) => {
-        handlereading(obj.done, obj.value);
-      });
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <FastShareRoomItems id={roomID} connection={connectionEstablished} />
-      {connectionEstablished ? (
-        <View style={styles.connected}>
-          <View style={styles.sendContainer}>
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize: 20,
-                fontWeight: "bold",
-                fontFamily: "cursive",
-                marginBottom: 50,
-                padding: 50,
-              }}
-            >
-              Your Room is connected.. Send Your file now!{" "}
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.connecting}>
-          {/* <Text>connecting....</Text> */}
-          <Image
-            source={require("../assets/images/wca.gif")}
-            style={styles.connectingImage}
-          />
-        </View>
-      )}
-
-      <View style={styles.centeredView}>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            Alert.alert("Modal has been closed.");
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>
-                {fileNameRef.current} has recieved !!!!
-              </Text>
-              <Text style={styles.modalText}>Would you like to download?</Text>
-              <View
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-evenly",
-                  flexDirection: "row",
-                }}
-              >
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setModalVisible(!modalVisible)}
-                >
-                  <Text style={styles.textStyle}>Cancel</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.button, styles.buttonOpen]}
-                  onPress={() => createAndDownloadBlobFile()}
-                >
-                  <Text style={styles.textStyled}>Download</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        {/* <Pressable
-          style={[styles.button, styles.buttonOpen]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.textStyle}>Show Modal</Text>
-        </Pressable> */}
-      </View>
-
-      <View
-        style={{
-          backgroundColor: "white",
-          justifyContent: "flex-end",
-          height: 85,
-          padding: 7,
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={
+          receivedFilePreview !== "" ||
+          sending ||
+          receiving ||
+          sentRequest ||
+          rejected ||
+          requested
+        }
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+          if (!sending || !receiving || !sentRequest || !requested)
+            setReceivedFilePreview("");
+          setRejected(false);
+          setModalVisible(!modalVisible);
         }}
       >
-        <Text style={{ textAlign: "center", margin: 5 }}>{file?.name}</Text>
-        <View style={styles.sendButtons}>
-          <Pressable
-            onPress={selectFile}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? "#ff5e18" : "#ff7518",
-              },
-              styles.wrapperCustom,
-            ]}
-          >
-            <AntDesign name="plus" size={18} color="white" />
-            <Text style={{ color: "white", marginLeft: 5 }}>Select file</Text>
-          </Pressable>
-          <Pressable
-            onPress={sendFile}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed ? "#ff5e18" : "#ff7518",
-              },
-              styles.wrapperCustom,
-            ]}
-          >
-            <Ionicons name="send" size={18} color="white" />
-            <Text style={{ color: "white", marginLeft: 5 }}>Send file</Text>
-          </Pressable>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            {requested && (
+              <>
+                {/* Share Request Modal*/}
+
+                <Text style={styles.modalText}>
+                  {peerUsername} wants to send you a file
+                </Text>
+                <Text style={styles.modalText}>
+                  Would you like to download?
+                </Text>
+                <View
+                  style={{
+                    // display: "flex",
+                    // alignItems: "center",
+                    marginTop: 10,
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                  }}
+                >
+                  <Pressable
+                    style={styles.buttonClose}
+                    onPress={() => {
+                      rejectRequest();
+                      setModalVisible(!modalVisible);
+                    }}
+                  >
+                    <Text style={styles.textStyle}>Reject</Text>
+                  </Pressable>
+                  <Pressable style={styles.buttonOpen} onPress={acceptRequest}>
+                    <Text style={{ color: "white" }}>Accept</Text>
+                  </Pressable>
+                </View>
+              </>
+            )}
+            {(sending || receiving || sentRequest) && (
+              <Text style={{ color: "black" }}>
+                {sending
+                  ? "The File is being sent, please wait..."
+                  : sentRequest
+                  ? "Wait till user accepts your request"
+                  : "Receiving File, please wait... "}
+              </Text>
+            )}
+            {rejected && (
+              <Text style={styles.textStyle}>
+                {peerUsername} Rejected your request, sorry!
+              </Text>
+            )}
+
+            {receivedFilePreview && (
+              <React.Fragment>
+                <Text style={styles.textStyle}>
+                  {peerUsername} has sent you a file
+                </Text>
+
+                {/* <Image src={receivedFilePreview} /> */}
+              </React.Fragment>
+            )}
+          </View>
         </View>
+      </Modal>
+
+      <FastShareRoom connection={receiver} id={user.roomId} />
+
+      <View style={styles.midArea}>
+        {receiver ? (
+          <Text style={styles.textStyle}>
+            Your room is connected, select file and send !!!!
+          </Text>
+        ) : (
+          <View style={styles.connecting}>
+            {/* <Text>connecting....</Text> */}
+            <Image
+              source={require("../assets/images/wca.gif")}
+              style={styles.connectingImage}
+            />
+          </View>
+        )}
+      </View>
+
+      <View style={styles.bottomArea}>
+        <Pressable
+          onPress={selectFile}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? "#ff5e18" : "#ff7518",
+              width: "70%",
+            },
+            styles.wrapperCustom,
+          ]}
+        >
+          {!file && <AntDesign name="plus" size={22} color="white" />}
+          <Text style={{ color: "white", marginLeft: 5 }}>
+            {file ? file.name : "Select File"}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() =>
+            !file || loading
+              ? Platform.OS == "web"
+                ? alert("Select a file")
+                : Alert.alert("Select a file")
+              : sendRequest(receiver?.username)
+          }
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? "#ff5e18" : "#ff7518",
+              width: "29%",
+            },
+            styles.wrapperCustom,
+          ]}
+        >
+          <Ionicons name="send" size={22} color="#fff" />
+          <Text style={{ color: "white", marginLeft: 5 }}>Send</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
   connectingImage: {
     height: 200,
     width: 200,
-    marginTop: 190,
+    // marginTop: 190,
     borderRadius: 100,
     opacity: 0.6,
-  },
-  wrapperCustom: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    borderRadius: 8,
-    padding: 6,
-  },
-  container: {
-    height: "100%",
-    backgroundColor: "white",
-  },
-  connected: {
-    marginTop: 90,
   },
   connecting: {
     color: "black",
@@ -392,24 +394,78 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  sendContainer: {
+  topArea: {
+    padding: 10,
+    paddingHorizontal: 15,
+    borderColor: "#D4D4D4",
+    borderBottomWidth: 1,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  textStyle: {
+    color: "black",
+    // fontWeight: "bold",
+    // textAlign: "center",
+  },
+
+  midArea: {
+    flex: 1,
+    // backgroundColor: 'lightgreen',
+    padding: 5,
     justifyContent: "center",
     alignItems: "center",
-    height: "80%",
   },
-  sendButtons: {
+
+  ShareUsers: {
+    borderRadius: 10,
+    padding: 5,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ECECEC",
+    marginBottom: 4,
+    shadowRadius: 4,
+    shadowOffset: {
+      height: 0,
+      width: 0,
+    },
+    shadowOpacity: 0.05,
+  },
+
+  bottomArea: {
+    padding: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  wrapperCustom: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-evenly",
     alignItems: "center",
-    padding: 3,
-    height: 35,
+    justifyContent: "center",
+    borderRadius: 8,
+    padding: 6,
   },
+
+  peer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  profileImg: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    marginRight: 10,
+    borderRadius: 20,
+    borderColor: "#ff7518",
+  },
+
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
+    // marginTop: 22,
   },
   modalView: {
     margin: 20,
@@ -428,26 +484,43 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 5,
-    padding: 10,
+    padding: 5,
     elevation: 2,
   },
   buttonOpen: {
     backgroundColor: "#ff7518",
+    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal: 25,
+    marginHorizontal: 8,
   },
   buttonClose: {
-    backgroundColor: "#EBECf0",
+    backgroundColor: "#ECECEC",
+    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal: 10,
+    marginHorizontal: 8,
   },
-  textStyle: {
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  textStyled: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+
   modalText: {
-    marginBottom: 15,
+    marginBottom: 5,
     textAlign: "center",
   },
 });
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+//   title: {
+//     fontSize: 20,
+//     fontWeight: 'bold',
+//   },
+//   separator: {
+//     marginVertical: 30,
+//     height: 1,
+//     width: '80%',
+//   },
+// });

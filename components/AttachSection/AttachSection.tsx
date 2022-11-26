@@ -5,7 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -16,12 +16,28 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 
+import { Auth, DataStore } from "aws-amplify";
+import { User } from "../../src/models";
+
 const AttachSection = ({ setImage, chatRoomId }) => {
   const navigation = useNavigation();
 
   // const [image, setImage] = useState<string | null>(null);
 
   // Image Picker
+
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const fetchedUsers = await DataStore.query(User);
+
+      const authUser = await Auth.currentAuthenticatedUser();
+      setUser(
+        fetchedUsers.find((user) => user.id === authUser.attributes.sub) || null
+      );
+    };
+    fetchUsers();
+  }, []);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -38,6 +54,7 @@ const AttachSection = ({ setImage, chatRoomId }) => {
       setImage(result.uri);
     }
   };
+  const newUser = { ...user, roomId: chatRoomId };
 
   return (
     <View>
@@ -63,7 +80,7 @@ const AttachSection = ({ setImage, chatRoomId }) => {
 
         <Pressable
           onPress={() =>
-            navigation.navigate("FastShareRoom", { id: chatRoomId })
+            navigation.navigate("FastShareRoom", { user: newUser })
           }
         >
           <MaterialCommunityIcons

@@ -24,27 +24,30 @@ const FastShareRoomTop = ({ connection, id }) => {
     fetchUsers();
   }, []);
   return (
-    <View style={styles.info}>
+    <View style={styles.topArea}>
       <Image
-        source={user?.imageUri ? { uri: user?.imageUri } : require('../../assets/images/avatar.png')}
-
+        source={
+          user?.imageUri
+            ? { uri: user?.imageUri }
+            : require("../../assets/images/avatar.png")
+        }
         style={styles.image}
       />
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "bold",
+          textTransform: "capitalize",
+          ...styles.textStyle,
+        }}
+      >
+        {user?.name}
+      </Text>
 
-      <View style={styles.rightConteiner}>
-        <View style={styles.row}>
-          <Text numberOfLines={1} style={styles.name}>
-            {user?.name}
-          </Text>
-        </View>
-
-        <Text style={styles.conStatus}>
-          {connection ? "Connected" : "Connecting..."}
-        </Text>
-      </View>
-      <View style={{ justifyContent: "center" }}>
-        <Text> speed</Text>
-      </View>
+      <Text style={styles.conStatus}>
+        {connection ? "Connected" : "Connecting..."}
+      </Text>
+      {/* <ImageUploader setFile={setFile} /> */}
     </View>
   );
 };
@@ -56,13 +59,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 5,
   },
+  topArea: {
+    padding: 10,
+    paddingHorizontal: 15,
+    borderColor: "#D4D4D4",
+    borderBottomWidth: 1,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  textStyle: {
+    color: "black",
+    // fontWeight: "bold",
+    // textAlign: "center",
+  },
   image: {
     height: 50,
     width: 50,
     borderRadius: 30,
     marginRight: 10,
     borderWidth: 2,
-    borderColor: '#ff7518',
+    borderColor: "#ff7518",
   },
   rightConteiner: {
     flex: 1,

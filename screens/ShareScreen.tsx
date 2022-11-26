@@ -10,10 +10,12 @@ import {
   View,
   SafeAreaView,
   Image,
+  Platform,
 } from "react-native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { useRoute } from "@react-navigation/native";
+import * as FileSystem from "expo-file-system";
 
 export default function ShareScreen() {
   const route = useRoute();
@@ -33,6 +35,9 @@ export default function ShareScreen() {
   const [peerSignal, setPeerSignal] = useState("");
   const [file, setFile] = useState(null);
   const [receivedFilePreview, setReceivedFilePreview] = useState("");
+
+  const newUser = { ...user, roomId: null };
+
   const SOCKET_EVENT = {
     CONNECTED: "connected",
     DISCONNECTED: "disconnect",
@@ -43,6 +48,8 @@ export default function ShareScreen() {
     SEND_REQUEST: "send_request",
     ACCEPT_REQUEST: "accept_request",
     REJECT_REQUEST: "reject_request",
+    SERVER_FULL: "server_full",
+    LEFT: "left",
   };
   const peerConfig = {
     iceServers: [
@@ -78,12 +85,40 @@ export default function ShareScreen() {
         const file = new Blob(fileChunks);
         // setReceivedFilePreview(URL.createObjectURL(file));
         const url = URL.createObjectURL(file);
-        link.setAttribute("href", url);
-        link.setAttribute("download", parsed.fileName);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (Platform.OS == "web") {
+          link.setAttribute("href", url);
+          link.setAttribute("download", parsed.fileName);
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          const callback = (downloadProgress) => {
+            const progress =
+              downloadProgress.totalBytesWritten /
+              downloadProgress.totalBytesExpectedToWrite;
+            // this.setState({
+            //   downloadProgress: progress,
+            // });
+          };
+
+          const downloadResumable = FileSystem.createDownloadResumable(
+            url,
+            FileSystem.documentDirectory + parsed.fileName,
+            {},
+            callback
+          );
+
+          downloadResumable
+            .downloadAsync()
+            .then((uri) => {
+              console.log("Finished downloading to ", uri);
+            })
+            .catch((e) => {
+              console.error(e);
+            });
+        }
+
         setReceiving(false);
       } else {
         // Keep appending various file chunks
@@ -140,12 +175,19 @@ export default function ShareScreen() {
         "my-custom-header": "1234", // ignored
       },
       query: {
-        name: JSON.stringify(user),
+        name: JSON.stringify(newUser),
       },
     });
 
     socket.current.on(SOCKET_EVENT.CONNECTED, (username) => {
       setMyUsername(username);
+    });
+    socket.current.on(SOCKET_EVENT.SERVER_FULL, () => {
+      if (Platform.OS == "web") {
+        alert("Server is full");
+      } else {
+        Alert.alert("Server is full");
+      }
     });
     socket.current.on(SOCKET_EVENT.USERS_LIST, (users) => {
       setUsersList(users);
@@ -164,6 +206,10 @@ export default function ShareScreen() {
       setSentRequest(false);
       setRejected(true);
     });
+
+    return () => {
+      socket.current.emit(SOCKET_EVENT.LEFT);
+    };
   }, []);
   useEffect(
     () => () => {
@@ -221,7 +267,7 @@ export default function ShareScreen() {
                     // display: "flex",
                     // alignItems: "center",
                     marginTop: 10,
-                    justifyContent: 'space-between',
+                    justifyContent: "space-between",
                     flexDirection: "row",
                   }}
                 >
@@ -234,11 +280,8 @@ export default function ShareScreen() {
                   >
                     <Text style={styles.textStyle}>Reject</Text>
                   </Pressable>
-                  <Pressable
-                    style={styles.buttonOpen}
-                    onPress={acceptRequest}
-                  >
-                    <Text style={{ color: 'white' }}>Accept</Text>
+                  <Pressable style={styles.buttonOpen} onPress={acceptRequest}>
+                    <Text style={{ color: "white" }}>Accept</Text>
                   </Pressable>
                 </View>
               </>
@@ -248,8 +291,8 @@ export default function ShareScreen() {
                 {sending
                   ? "The File is being sent, please wait..."
                   : sentRequest
-                    ? "Wait till user accepts your request"
-                    : "Receiving File, please wait... "}
+                  ? "Wait till user accepts your request"
+                  : "Receiving File, please wait... "}
               </Text>
             )}
             {rejected && (
@@ -271,23 +314,22 @@ export default function ShareScreen() {
         </View>
       </Modal>
 
-
-
-
-
-
-
-
-
       <View style={styles.topArea}>
-
-        <Text style={{ fontSize: 18, fontWeight: 'bold', textTransform: 'capitalize', ...styles.textStyle, }}>{myUsername}</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            textTransform: "capitalize",
+            ...styles.textStyle,
+          }}
+        >
+          {myUsername}
+        </Text>
         <Text style={styles.textStyle}>
           Tap on the receiver to share selected file
         </Text>
         {/* <ImageUploader setFile={setFile} /> */}
       </View>
-
 
       <View style={styles.midArea}>
         {usersList.length > 1 ? (
@@ -299,7 +341,9 @@ export default function ShareScreen() {
                   style={[styles.button, styles.peer, styles.ShareUsers]}
                   onPress={() =>
                     !file || loading
-                      ? Alert.alert("Select a file")
+                      ? Platform.OS == "web"
+                        ? alert("Select a file")
+                        : Alert.alert("Select a file")
                       : sendRequest(username)
                   }
                 >
@@ -327,23 +371,21 @@ export default function ShareScreen() {
               )
           )
         ) : (
-
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 15, }}>
-            <Text style={styles.textStyle}>
-              No Users Online Right Now!
-            </Text>
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 15,
+            }}
+          >
+            <Text style={styles.textStyle}>No Users Online Right Now!</Text>
             <Text style={styles.textStyle}>
               Waiting for users to be connected...
             </Text>
-
           </View>
-
         )}
       </View>
-
-
-
-
 
       <View style={styles.bottomArea}>
         <Pressable
@@ -361,12 +403,6 @@ export default function ShareScreen() {
           </Text>
         </Pressable>
       </View>
-
-
-
-
-
-
     </SafeAreaView>
   );
 }
@@ -374,31 +410,27 @@ export default function ShareScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
 
   topArea: {
     padding: 10,
     paddingHorizontal: 15,
-    borderColor: '#D4D4D4',
+    borderColor: "#D4D4D4",
     borderBottomWidth: 1,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-
   },
   textStyle: {
     color: "black",
     // fontWeight: "bold",
     // textAlign: "center",
-
   },
 
   midArea: {
     flex: 1,
     // backgroundColor: 'lightgreen',
     padding: 5,
-
-
   },
 
   ShareUsers: {
@@ -406,38 +438,28 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "white",
     borderWidth: 1,
-    borderColor: '#ECECEC',
+    borderColor: "#ECECEC",
     marginBottom: 4,
     shadowRadius: 4,
     shadowOffset: {
       height: 0,
       width: 0,
     },
-    shadowOpacity: .05,
-
-
+    shadowOpacity: 0.05,
   },
 
   bottomArea: {
     padding: 5,
-
-
-
-
   },
-
 
   wrapperCustom: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
     borderRadius: 8,
     padding: 6,
   },
-
-
-
 
   peer: {
     display: "flex",
@@ -453,7 +475,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: "#ff7518",
   },
-
 
   centeredView: {
     flex: 1,
@@ -487,8 +508,6 @@ const styles = StyleSheet.create({
     padding: 5,
     paddingHorizontal: 25,
     marginHorizontal: 8,
-
-
   },
   buttonClose: {
     backgroundColor: "#ECECEC",
@@ -496,7 +515,6 @@ const styles = StyleSheet.create({
     padding: 5,
     paddingHorizontal: 10,
     marginHorizontal: 8,
-
   },
 
   modalText: {
