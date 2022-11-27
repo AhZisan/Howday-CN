@@ -167,9 +167,9 @@ export default function ShareScreen() {
     });
     peerInstance.current = peer;
   };
-  const SERVER_URL = "http://localhost:5000/";
+  const SERVER_URL = "http://13.214.180.155/";
   useEffect(() => {
-    socket.current = io("http://localhost:5000/", {
+    socket.current = io("http://13.214.180.155/", {
       transports: ["websocket"],
       extraHeaders: {
         "my-custom-header": "1234", // ignored
