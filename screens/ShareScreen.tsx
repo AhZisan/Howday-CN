@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
+import RNSimplePeer from "react-native-simple-peer";
 import {
   Alert,
   Modal,
@@ -60,7 +61,7 @@ export default function ShareScreen() {
       { urls: "stun:stun4.l.google.com:19302" },
     ],
   };
-  const acceptRequest = () => {
+  const acceptRequest = async () => {
     setRequested(false);
     const peer = new Peer({
       initiator: false,
@@ -76,16 +77,15 @@ export default function ShareScreen() {
       setReceiving(true);
     });
     const fileChunks = [];
-    peer.on("data", (data) => {
+    peer.on("data", async (data) => {
       if (data.toString().includes("done")) {
         const parsed = JSON.parse(data);
         // Once, all the chunks are received, combine them to form a Blob
-        const link = document.createElement("a");
-
-        const file = new Blob(fileChunks);
         // setReceivedFilePreview(URL.createObjectURL(file));
-        const url = URL.createObjectURL(file);
         if (Platform.OS == "web") {
+          const link = document.createElement("a");
+          const file = new Blob(fileChunks);
+          const url = URL.createObjectURL(file);
           link.setAttribute("href", url);
           link.setAttribute("download", parsed.fileName);
           link.style.visibility = "hidden";
@@ -93,6 +93,9 @@ export default function ShareScreen() {
           link.click();
           document.body.removeChild(link);
         } else {
+          // const base64String = btoa(
+          //   String.fromCharCode(...new Uint8Array(fileChunks))
+          // );
           const callback = (downloadProgress) => {
             const progress =
               downloadProgress.totalBytesWritten /
@@ -102,21 +105,17 @@ export default function ShareScreen() {
             // });
           };
 
-          const downloadResumable = FileSystem.createDownloadResumable(
-            url,
+          await FileSystem.writeAsStringAsync(
             FileSystem.documentDirectory + parsed.fileName,
-            {},
-            callback
+            fileChunks,
+            {
+              encoding: FileSystem.EncodingType.Base64,
+            }
           );
 
-          downloadResumable
-            .downloadAsync()
-            .then((uri) => {
-              console.log("Finished downloading to ", uri);
-            })
-            .catch((e) => {
-              console.error(e);
-            });
+          // const mediaResult = await MediaLibrary.saveToLibraryAsync(
+          //   parsed.fileName
+          // );
         }
 
         setReceiving(false);
