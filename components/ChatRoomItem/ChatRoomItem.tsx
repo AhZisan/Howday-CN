@@ -11,7 +11,7 @@ export default function ChatRoomItem({ chatRoom }) {
   // the display user
   const [user, setUser] = useState<User | null>(null);
   const [lastMessage, setLastMessage] = useState<Message | undefined>();
-
+  const isFocused = useIsFocused();
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -36,7 +36,16 @@ export default function ChatRoomItem({ chatRoom }) {
     DataStore.query(Message, chatRoom.chatRoomLastMessagesId).then(
       setLastMessage
     );
-  }, []);
+    return () => {
+      if (!chatRoom.chatRoomLastMessagesId) {
+        return;
+      }
+      DataStore.query(Message, chatRoom.chatRoomLastMessagesId).then(
+        setLastMessage
+      );
+    }
+
+  }, [isFocused]);
 
   const OnPrs = () => {
     navigation.navigate("ChatRoom", { id: chatRoom.id });

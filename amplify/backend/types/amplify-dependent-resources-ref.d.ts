@@ -1,6 +1,6 @@
 export type AmplifyDependentResourcesAttributes = {
     "auth": {
-        "howdyCN": {
+        "howdyJP": {
             "IdentityPoolId": "string",
             "IdentityPoolName": "string",
             "UserPoolId": "string",
@@ -10,24 +10,24 @@ export type AmplifyDependentResourcesAttributes = {
             "AppClientID": "string"
         }
     },
-    "storage": {
-        "s3howdycnstorage5a354f2e": {
-            "BucketName": "string",
-            "Region": "string"
-        }
-    },
     "api": {
-        "howdyCN": {
+        "howdyJP": {
             "GraphQLAPIKeyOutput": "string",
             "GraphQLAPIIdOutput": "string",
             "GraphQLAPIEndpointOutput": "string"
         }
     },
     "function": {
-        "howdyCNPostConfirmation": {
+        "howdyJPPostConfirmation": {
             "Name": "string",
             "Arn": "string",
             "LambdaExecutionRole": "string",
+            "Region": "string"
+        }
+    },
+    "storage": {
+        "s3howdyjpstorage45fa4f8b": {
+            "BucketName": "string",
             "Region": "string"
         }
     }

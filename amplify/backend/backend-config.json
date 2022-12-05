@@ -1,12 +1,12 @@
 {
   "auth": {
-    "howdyCN": {
+    "howdyJP": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "howdyCNPostConfirmation",
+          "resourceName": "howdyJPPostConfirmation",
           "triggerProvider": "Cognito",
           "attributes": [
             "Arn",
@@ -35,15 +35,8 @@
       }
     }
   },
-  "storage": {
-    "s3howdycnstorage5a354f2e": {
-      "service": "S3",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": []
-    }
-  },
   "api": {
-    "howdyCN": {
+    "howdyJP": {
       "service": "AppSync",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
@@ -66,10 +59,17 @@
     }
   },
   "function": {
-    "howdyCNPostConfirmation": {
+    "howdyJPPostConfirmation": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    }
+  },
+  "storage": {
+    "s3howdyjpstorage45fa4f8b": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
     }
   }
 }

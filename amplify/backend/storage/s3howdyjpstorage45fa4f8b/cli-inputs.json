@@ -1,7 +1,7 @@
 {
-  "resourceName": "s3howdycnstorage5a354f2e",
-  "bucketName": "howdy-cn-storage-5a354f2e",
-  "policyUUID": "5f81fd91",
+  "resourceName": "s3howdyjpstorage45fa4f8b",
+  "bucketName": "howdy-jp-storage-45fa4f8b",
+  "policyUUID": "230964bf",
   "storageAccess": "auth",
   "guestAccess": [],
   "authAccess": [

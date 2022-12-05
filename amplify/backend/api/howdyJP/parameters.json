@@ -1,5 +1,5 @@
 {
-  "AppSyncApiName": "howdyCN",
+  "AppSyncApiName": "howdyJP",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false
 }

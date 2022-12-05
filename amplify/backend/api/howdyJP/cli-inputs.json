@@ -1,7 +1,7 @@
 {
   "version": 1,
   "serviceConfiguration": {
-    "apiName": "howdyCN",
+    "apiName": "howdyJP",
     "serviceName": "AppSync",
     "defaultAuthType": {
       "mode": "API_KEY",

@@ -1,28 +1,28 @@
 {
   "staging": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-howdycn-staging-62610-authRole",
-      "UnauthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdycn-staging-62610-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdycn-staging-62610-authRole",
-      "Region": "ap-southeast-1",
-      "DeploymentBucketName": "amplify-howdycn-staging-62610-deployment",
-      "UnauthRoleName": "amplify-howdycn-staging-62610-unauthRole",
-      "StackName": "amplify-howdycn-staging-62610",
-      "StackId": "arn:aws:cloudformation:ap-southeast-1:235847695468:stack/amplify-howdycn-staging-62610/c2141c40-4ead-11ed-8b94-0a86f0362834",
-      "AmplifyAppId": "d2qsma67ifeq3w",
-      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-howdycn-staging-62610-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+      "AuthRoleName": "amplify-howdyjp-staging-161743-authRole",
+      "UnauthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdyjp-staging-161743-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::235847695468:role/amplify-howdyjp-staging-161743-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-howdyjp-staging-161743-deployment",
+      "UnauthRoleName": "amplify-howdyjp-staging-161743-unauthRole",
+      "StackName": "amplify-howdyjp-staging-161743",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:235847695468:stack/amplify-howdyjp-staging-161743/592c8dd0-74b8-11ed-b265-063a4cac2221",
+      "AmplifyAppId": "d54uqhaodks3z",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-howdyjp-staging-161743-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
     },
     "categories": {
       "auth": {
-        "howdyCN": {}
+        "howdyJP": {}
       },
       "storage": {
-        "s3howdycnstorage5a354f2e": {}
+        "s3howdyjpstorage45fa4f8b": {}
       },
       "function": {
-        "howdyCNPostConfirmation": {
-          "deploymentBucketName": "amplify-howdycn-staging-62610-deployment",
-          "s3Key": "amplify-builds/howdyCNPostConfirmation-5152716d2b5751746c79-build.zip"
+        "howdyJPPostConfirmation": {
+          "deploymentBucketName": "amplify-howdyjp-staging-161743-deployment",
+          "s3Key": "amplify-builds/howdyJPPostConfirmation-7565776653735a625250-build.zip"
         }
       }
     }

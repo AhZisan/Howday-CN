@@ -3,15 +3,15 @@
   "modules": [
     "custom"
   ],
-  "parentResource": "howdyCN",
-  "functionName": "howdyCNPostConfirmation",
-  "resourceName": "howdyCNPostConfirmation",
+  "parentResource": "howdyJP",
+  "functionName": "howdyJPPostConfirmation",
+  "resourceName": "howdyJPPostConfirmation",
   "parentStack": "auth",
   "triggerEnvs": [],
   "triggerDir": "C:\\snapshot\\repo\\build\\node_modules\\@aws-amplify\\amplify-category-auth\\provider-utils\\awscloudformation\\triggers\\PostConfirmation",
   "triggerTemplate": "PostConfirmation.json.ejs",
   "triggerEventPath": "PostConfirmation.event.json",
-  "roleName": "howdyCNPostConfirmation",
+  "roleName": "howdyJPPostConfirmation",
   "skipEdit": true,
   "enableCors": false
 }
